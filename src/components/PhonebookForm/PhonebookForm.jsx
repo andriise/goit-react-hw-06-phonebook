@@ -1,63 +1,81 @@
-import { nanoid } from 'nanoid';
 import { useState } from 'react';
-import { Form, FormContainer, FormButton } from './PhonebookForm.styled';
-import { Formik, Field } from 'formik';
-export const PhonebookForm = ({ onAddContact }) => {
-  const [contacts, setContacts] = useState([
-    { id: nanoid(), name: '', number: '' },
-  ]);
+import { useDispatch } from 'react-redux';
+import { nanoid } from 'nanoid';
+import { addContact } from '../redux/contactsSlice';
+import { Form, Label, Input, Button } from './PhonebookForm.styled';
+
+const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const dispatch = useDispatch();
 
-  const handleSubmit = values => {
-    values.preventDefault();
-    const contact = {
+  const handleInputChange = e => {
+    const { name, value } = e.currentTarget;
+
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'number':
+        setNumber(value);
+        break;
+
+      default:
+        throw new Error(`Field type with a name ${name} is not processed`);
+    }
+  };
+
+  const onAddNewContact = e => {
+    e.preventDefault();
+    const contactEl = {
       id: nanoid(),
-      name: values.name,
-      number: values.number,
+      name,
+      number,
     };
-    setContacts([...contacts, contact]);
+    dispatch(addContact(contactEl));
+    reset();
+  };
+
+  const reset = () => {
     setName('');
     setNumber('');
-    onAddContact(name, number);
   };
   return (
-    <FormContainer>
-      <h2>Phonebook</h2>
-      <Formik
-        initialValues={{ name: '' }}
-        onSubmit={(values, actions) => {
-          onAddContact({
-            ...values,
-            id: nanoid(),
-          });
-          actions.resetForm();
-        }}
-      >
-        <Form onSubmit={handleSubmit}>
-          <label htmlFor="name">Name:</label>
-          <Field
-            type="text"
-            name="name"
-            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-            required
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
-          <label htmlFor="number">Number</label>
-          <Field
-            type="tel"
-            name="number"
-            pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-            required
-            value={number}
-            onChange={e => setNumber(e.target.value)}
-          />
+    <div>
+      <Form onSubmit={onAddNewContact}>
+        <div>
+          <Label>
+            Name
+            <Input
+              onChange={handleInputChange}
+              value={name}
+              name="name"
+              type="text"
+              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+              title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+              required
+            />
+          </Label>
+        </div>
 
-          <FormButton type="submit">Add contact</FormButton>
-        </Form>
-      </Formik>
-    </FormContainer>
+        <div>
+          <Label>
+            Number
+            <Input
+              onChange={handleInputChange}
+              value={number}
+              name="number"
+              type="tel"
+              pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+              title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+              required
+            />
+          </Label>
+        </div>
+        <Button type="submit">Add contact</Button>
+      </Form>
+    </div>
   );
 };
+
+export default ContactForm;

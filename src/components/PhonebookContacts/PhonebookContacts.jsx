@@ -1,17 +1,31 @@
-const PhonebookContacts = ({ contacts, onDeleteContact }) => {
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { deleteContact } from '../redux/contactsSlice';
+import { visibleContacts } from '../redux/selectors';
+import { List, Item, Wrap, Info, ButtonDel } from './ContactsList.styled';
+
+const ContactsList = () => {
+  const filteredContacts = useSelector(visibleContacts);
+
+  const dispatch = useDispatch();
+
+  const onDeeleteContact = id => {
+    dispatch(deleteContact(id));
+  };
+
   return (
-    <div>
-      <h2>Contacts</h2>
-      <ul>
-        {contacts.map(contact => (
-          <li key={contact.id}>
-            {contact.name}: {contact.number}
-            <button onClick={() => onDeleteContact(contact.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <List>
+      {filteredContacts.map(({ id, name, number }) => (
+        <Item key={id}>
+          <Wrap>
+            <Info>{name}: </Info>
+            <Info>{number}</Info>
+            <ButtonDel onClick={() => onDeeleteContact(id)}>Delete</ButtonDel>
+          </Wrap>
+        </Item>
+      ))}
+    </List>
   );
 };
 
-export default PhonebookContacts;
+export default ContactsList;
